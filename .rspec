@@ -1,0 +1,6 @@
+-I lib
+-r rechner
+-f doc
+--color
+--tty
+--warnings
