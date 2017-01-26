@@ -6,9 +6,43 @@ module Rechner
 
   class Lexer
     def lex(input)
-      state = BaseState.new(StringIO.new(input))
+      state = BaseState.new(CharacterStream.from_string(input))
       until (state = state.run).final?; end
       state.tokens
+    end
+  end
+
+  class CharacterStream
+    def initialize(input)
+      @input = input
+      @char = nil
+    end
+
+    def self.from_string(str)
+      new(StringIO.new(str))
+    end
+
+    def eof?
+      @char.nil? && @input.eof?
+    end
+
+    def position
+      @input.pos
+    end
+
+    def next_char
+      @char ||= @input.getc
+    end
+
+    def consume_char
+      @char = nil
+    end
+
+    def consume_whitespace
+      while (c = next_char) && c =~ /\s/
+        consume_char
+      end
+      nil
     end
   end
 
@@ -86,11 +120,6 @@ module Rechner
     def produce(token)
       @tokens << token
     end
-
-    def consume_whitespace
-      while (c = @input.getc) && c =~ /\s/; end
-      @input.ungetc(c)
-    end
   end
 
   class BaseState < LexerState
@@ -98,35 +127,39 @@ module Rechner
       if @input.eof?
         FinalState.new(@input, @tokens)
       else
-        consume_whitespace
-        c = @input.getc
+        @input.consume_whitespace
+        c = @input.next_char
         case c
         when /\d/
-          @input.ungetc(c)
           NumberState.new(@input, @tokens)
         when /\w/
-          @input.ungetc(c)
           IdentifierState.new(@input, @tokens)
         when '+'
+          @input.consume_char
           produce(PlusToken.new)
           self
         when '-'
+          @input.consume_char
           produce(MinusToken.new)
           self
         when '*'
+          @input.consume_char
           produce(MultiplicationToken.new)
           self
         when '/'
+          @input.consume_char
           produce(DivisionToken.new)
           self
         when '('
+          @input.consume_char
           produce(OpenParenthesesToken.new)
           self
         when ')'
+          @input.consume_char
           produce(CloseParenthesesToken.new)
           self
         else
-          raise LexerError, "Unexpected input \"#{c}\" at position #{@input.pos}"
+          raise LexerError, "Unexpected input \"#{c}\" at position #{@input.position}"
         end
       end
     end
@@ -141,10 +174,10 @@ module Rechner
   class NumberState < LexerState
     def run
       n = ''
-      while (c = @input.getc) =~ /\d/
+      while (c = @input.next_char) =~ /\d/
         n << c
+        @input.consume_char
       end
-      @input.ungetc(c)
       produce(NumberToken.new(n.to_i))
       BaseState.new(@input, @tokens)
     end
@@ -153,10 +186,10 @@ module Rechner
   class IdentifierState < LexerState
     def run
       s = ''
-      while (c = @input.getc) =~ /\w|\d/
+      while (c = @input.next_char) =~ /\w|\d/
         s << c
+        @input.consume_char
       end
-      @input.ungetc(c)
       produce(IdentifierToken.new(s))
       BaseState.new(@input, @tokens)
     end
