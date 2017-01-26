@@ -82,6 +82,10 @@ module Rechner
       def calculate(bindings=nil)
         nil
       end
+
+      def references
+        []
+      end
     end
 
     class ConstantNode < AstNode
@@ -124,6 +128,10 @@ module Rechner
         end
       end
 
+      def references
+        [@name]
+      end
+
       def eql?(other)
         other.is_a?(self.class) && @name.eql?(other.name)
       end
@@ -149,6 +157,10 @@ module Rechner
 
       def calculate(bindings=nil)
         @left.calculate(bindings).send(@operator, @right.calculate(bindings))
+      end
+
+      def references
+        @left.references | @right.references
       end
 
       def eql?(other)

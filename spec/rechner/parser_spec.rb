@@ -110,14 +110,26 @@ module Rechner
         expect(parser.parse('1 + 2 + 3 + 4').calculate).to eq(1 + 2 + 3 + 4)
       end
 
-      context 'when containing references and is given bindings' do
-        it 'can calculate its own value' do
-          expect(parser.parse('a + b + 3 + 4').calculate(a: 1, b: 2)).to eq(1 + 2 + 3 + 4)
+      context 'when containing references' do
+        it 'can return those references\' names' do
+          expect(parser.parse('a + b * c + d + 4').references).to eq([:a, :b, :c, :d])
         end
 
-        context 'but not all references are present in the bindings' do
-          it 'raises an error' do
-            expect { parser.parse('a + b').calculate(a: 1) }.to raise_error(ReferenceError, 'No binding for "b"')
+        context 'and some references occur more than once' do
+          it 'can return the unique references' do
+            expect(parser.parse('a + a + a * b').references).to eq([:a, :b])
+          end  
+        end
+
+        context 'and is given bindings' do
+          it 'can calculate its own value' do
+            expect(parser.parse('a + b + 3 + 4').calculate(a: 1, b: 2)).to eq(1 + 2 + 3 + 4)
+          end
+
+          context 'but not all references are present in the bindings' do
+            it 'raises an error' do
+              expect { parser.parse('a + b').calculate(a: 1) }.to raise_error(ReferenceError, 'No binding for "b"')
+            end
           end
         end
       end
