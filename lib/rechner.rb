@@ -7,7 +7,7 @@ module Rechner
   class Lexer
     def lex(input)
       state = BaseState.new(CharacterStream.from_string(input))
-      until (state = state.run).final?; end
+      state = state.run until state.final?
       state.tokens
     end
   end
@@ -60,6 +60,12 @@ module Rechner
 
     def hash
       @value.hash
+    end
+  end
+
+  class EndToken < Token
+    def initialize
+      super(nil)
     end
   end
 
@@ -117,6 +123,10 @@ module Rechner
       false
     end
 
+    def run
+      self
+    end
+
     def produce(token)
       @tokens << token
     end
@@ -125,6 +135,7 @@ module Rechner
   class BaseState < LexerState
     def run
       if @input.eof?
+        produce(EndToken.new)
         FinalState.new(@input, @tokens)
       else
         @input.consume_whitespace

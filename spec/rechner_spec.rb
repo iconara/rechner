@@ -7,12 +7,14 @@ module Rechner
     it 'lexes a one-char number' do
       expect(lexer.lex('1')).to eq([
         NumberToken.new(1),
+        EndToken.new,
       ])
     end
 
     it 'lexes a multi-char number' do
       expect(lexer.lex('123')).to eq([
         NumberToken.new(123),
+        EndToken.new,
       ])
     end
 
@@ -21,18 +23,21 @@ module Rechner
         NumberToken.new(12),
         PlusToken.new,
         NumberToken.new(34),
+        EndToken.new,
       ])
     end
 
     it 'ignores whitespace at the start of the input' do
       expect(lexer.lex('  1')).to eq([
-        NumberToken.new(1)
+        NumberToken.new(1),
+        EndToken.new,
       ])
     end
 
     it 'ignores whitespace at the end of the input' do
       expect(lexer.lex('  1')).to eq([
         NumberToken.new(1),
+        EndToken.new,
       ])
     end
 
@@ -41,30 +46,35 @@ module Rechner
         NumberToken.new(1),
         PlusToken.new,
         NumberToken.new(1),
+        EndToken.new,
       ])
     end
 
     it 'lexes a one-char identifier' do
       expect(lexer.lex('a')).to eq([
         IdentifierToken.new('a'),
+        EndToken.new,
       ])
     end
 
     it 'lexes a multi-char identifier' do
       expect(lexer.lex('abc')).to eq([
         IdentifierToken.new('abc'),
+        EndToken.new,
       ])
     end
 
     it 'lexes an identifier with an underscore' do
       expect(lexer.lex('ab_c')).to eq([
         IdentifierToken.new('ab_c'),
+        EndToken.new,
       ])
     end
 
     it 'lexes an identifier with numbers' do
       expect(lexer.lex('abc123')).to eq([
         IdentifierToken.new('abc123'),
+        EndToken.new,
       ])
     end
 
@@ -73,6 +83,7 @@ module Rechner
         IdentifierToken.new('abc'),
         PlusToken.new,
         IdentifierToken.new('def'),
+        EndToken.new,
       ])
     end
 
@@ -83,6 +94,7 @@ module Rechner
         IdentifierToken.new('def'),
         PlusToken.new,
         NumberToken.new(123),
+        EndToken.new,
       ])
     end
 
@@ -91,6 +103,7 @@ module Rechner
         IdentifierToken.new('a'),
         MinusToken.new,
         NumberToken.new(1),
+        EndToken.new,
       ])
     end
 
@@ -99,6 +112,7 @@ module Rechner
         IdentifierToken.new('a'),
         MultiplicationToken.new,
         NumberToken.new(1),
+        EndToken.new,
       ])
     end
 
@@ -107,6 +121,7 @@ module Rechner
         IdentifierToken.new('a'),
         DivisionToken.new,
         NumberToken.new(1),
+        EndToken.new,
       ])
     end
 
@@ -114,6 +129,7 @@ module Rechner
       expect(lexer.lex('-a')).to eq([
         MinusToken.new,
         IdentifierToken.new('a'),
+        EndToken.new,
       ])
     end
 
@@ -128,6 +144,7 @@ module Rechner
         MinusToken.new,
         IdentifierToken.new('d'),
         CloseParenthesesToken.new,
+        EndToken.new,
       ])
     end
 
@@ -140,6 +157,7 @@ module Rechner
         NumberToken.new(1),
         NumberToken.new(1),
         PlusToken.new,
+        EndToken.new,
       ])
     end
   end
