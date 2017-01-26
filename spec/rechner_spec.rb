@@ -1,7 +1,7 @@
 module Rechner
   describe Lexer do
     subject :lexer do
-      described_class.new
+      described_class
     end
 
     it 'lexes a one-char number' do

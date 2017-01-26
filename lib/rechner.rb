@@ -5,10 +5,27 @@ module Rechner
   LexerError = Class.new(RechnerError)
 
   class Lexer
-    def lex(input)
-      state = BaseState.new(CharacterStream.from_string(input))
-      state = state.run until state.final?
-      state.tokens
+    def initialize(str)
+      @state = BaseState.new(CharacterStream.from_string(str))
+      @tokens = []
+    end
+
+    def self.lex(input)
+      lexer = new(input)
+      tokens = []
+      while (token = lexer.next_token)
+        tokens << token
+      end
+      tokens
+    end
+
+    def next_token
+      while @tokens.empty? && !@state.final?
+        next_state = @state.run
+        @tokens = @state.tokens.dup
+        @state = next_state
+      end
+      @tokens.shift
     end
   end
 
@@ -114,9 +131,9 @@ module Rechner
   class LexerState
     attr_reader :tokens
 
-    def initialize(input, tokens=[])
+    def initialize(input)
       @input = input
-      @tokens = tokens
+      @tokens = []
     end
 
     def final?
@@ -136,39 +153,39 @@ module Rechner
     def run
       if @input.eof?
         produce(EndToken.new)
-        FinalState.new(@input, @tokens)
+        FinalState.new(@input)
       else
         @input.consume_whitespace
         c = @input.next_char
         case c
         when /\d/
-          NumberState.new(@input, @tokens)
+          NumberState.new(@input)
         when /\w/
-          IdentifierState.new(@input, @tokens)
+          IdentifierState.new(@input)
         when '+'
           @input.consume_char
           produce(PlusToken.new)
-          self
+          self.class.new(@input)
         when '-'
           @input.consume_char
           produce(MinusToken.new)
-          self
+          self.class.new(@input)
         when '*'
           @input.consume_char
           produce(MultiplicationToken.new)
-          self
+          self.class.new(@input)
         when '/'
           @input.consume_char
           produce(DivisionToken.new)
-          self
+          self.class.new(@input)
         when '('
           @input.consume_char
           produce(OpenParenthesesToken.new)
-          self
+          self.class.new(@input)
         when ')'
           @input.consume_char
           produce(CloseParenthesesToken.new)
-          self
+          self.class.new(@input)
         else
           raise LexerError, "Unexpected input \"#{c}\" at position #{@input.position}"
         end
@@ -190,7 +207,7 @@ module Rechner
         @input.consume_char
       end
       produce(NumberToken.new(n.to_i))
-      BaseState.new(@input, @tokens)
+      BaseState.new(@input)
     end
   end
 
@@ -202,7 +219,7 @@ module Rechner
         @input.consume_char
       end
       produce(IdentifierToken.new(s))
-      BaseState.new(@input, @tokens)
+      BaseState.new(@input)
     end
   end
 end
