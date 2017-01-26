@@ -3,3 +3,4 @@ module Rechner
 end
 
 require 'rechner/lexer'
+require 'rechner/parser'
