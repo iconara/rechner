@@ -5,40 +5,103 @@ module Rechner
 
   class Lexer
     def initialize(str)
-      @state = BaseState.new(CharacterStream.from_string(str))
-      @tokens = []
+      @character_stream = CharacterStream.from_string(str)
+      @token = nil
     end
 
     def self.lex(input)
       lexer = new(input)
       tokens = []
-      while (token = lexer.next_token)
-        tokens << token
+      until lexer.eof?
+        tokens << lexer.next_token
         lexer.consume_token
       end
+      tokens << lexer.next_token
       tokens
     end
 
     def eof?
-      EndToken === @tokens.first
+      EndToken === next_token
     end
 
     def next_token
-      while @tokens.empty? && !@state.final?
-        next_state = @state.run
-        @tokens = @state.tokens.dup
-        @state = next_state
-      end
-      @tokens.first
+      @token ||= produce_next_token
     end
 
     def consume_token
-      @tokens.shift
+      token = @token
+      @token = nil
+      token
     end
 
+    private
+
+    WHITESPACE = /\s/
+    NUMBER = /\d/
+    LETTER = /\w/
+    PLUS = '+'.freeze
+    MINUS = '-'.freeze
+    MULTIPLICATION = '*'.freeze
+    DIVISION = '/'.freeze
+    OPEN_PARENTHESIS = '('.freeze
+    CLOSE_PARENTHESIS = ')'.freeze
+
+    def produce_next_token
+      if @character_stream.eof?
+        EndToken.new
+      else
+        consume_whitespace
+        c = @character_stream.next_char
+        case c
+        when NUMBER
+          NumberToken.new(consume_all(NUMBER).to_i)
+        when LETTER
+          IdentifierToken.new(consume_all(LETTER))
+        when PLUS
+          @character_stream.consume_char
+          PlusToken.new
+        when MINUS
+          @character_stream.consume_char
+          MinusToken.new
+        when MULTIPLICATION
+          @character_stream.consume_char
+          MultiplicationToken.new
+        when DIVISION
+          @character_stream.consume_char
+          DivisionToken.new
+        when OPEN_PARENTHESIS
+          @character_stream.consume_char
+          OpenParenthesisToken.new
+        when CLOSE_PARENTHESIS
+          @character_stream.consume_char
+          CloseParenthesisToken.new
+        else
+          raise LexerError, "Unexpected input \"#{c}\" at position #{@character_stream.position}"
+        end
+      end
+    end
+
+    def consume_whitespace
+      while WHITESPACE === (c = @character_stream.next_char)
+        @character_stream.consume_char
+      end
+      nil
+    end
+
+    def consume_all(matcher)
+      s = ''
+      while matcher === (c = @character_stream.next_char)
+        s << c
+        @character_stream.consume_char
+      end
+      s
+    end
+
+    public
+
     class CharacterStream
-      def initialize(input)
-        @input = input
+      def initialize(io)
+        @io = io
         @char = nil
       end
 
@@ -47,15 +110,15 @@ module Rechner
       end
 
       def eof?
-        @char.nil? && @input.eof?
+        @char.nil? && @io.eof?
       end
 
       def position
-        @input.pos
+        @io.pos
       end
 
       def next_char
-        @char ||= @input.getc
+        @char ||= @io.getc
       end
 
       def consume_char
@@ -127,105 +190,6 @@ module Rechner
     class CloseParenthesisToken < Token
       def initialize
         super(')')
-      end
-    end
-
-    class LexerState
-      attr_reader :tokens
-
-      def initialize(input)
-        @input = input
-        @tokens = []
-      end
-
-      def final?
-        false
-      end
-
-      def run
-        self
-      end
-
-      def produce(token)
-        @tokens << token
-      end
-    end
-
-    class BaseState < LexerState
-      WHITESPACE = /\s/
-      NUMBER = /\d/
-      LETTER = /\w/
-      PLUS = '+'.freeze
-      MINUS = '-'.freeze
-      MULTIPLICATION = '*'.freeze
-      DIVISION = '/'.freeze
-      OPEN_PARENTHESIS = '('.freeze
-      CLOSE_PARENTHESIS = ')'.freeze
-
-      def run
-        if @input.eof?
-          produce(EndToken.new)
-          FinalState.new(@input)
-        else
-          consume_whitespace
-          c = @input.next_char
-          case c
-          when NUMBER
-            produce(NumberToken.new(consume_all(NUMBER).to_i))
-            self.class.new(@input)
-          when LETTER
-            produce(IdentifierToken.new(consume_all(LETTER)))
-            self.class.new(@input)
-          when PLUS
-            @input.consume_char
-            produce(PlusToken.new)
-            self.class.new(@input)
-          when MINUS
-            @input.consume_char
-            produce(MinusToken.new)
-            self.class.new(@input)
-          when MULTIPLICATION
-            @input.consume_char
-            produce(MultiplicationToken.new)
-            self.class.new(@input)
-          when DIVISION
-            @input.consume_char
-            produce(DivisionToken.new)
-            self.class.new(@input)
-          when OPEN_PARENTHESIS
-            @input.consume_char
-            produce(OpenParenthesisToken.new)
-            self.class.new(@input)
-          when CLOSE_PARENTHESIS
-            @input.consume_char
-            produce(CloseParenthesisToken.new)
-            self.class.new(@input)
-          else
-            raise LexerError, "Unexpected input \"#{c}\" at position #{@input.position}"
-          end
-        end
-      end
-
-      def consume_whitespace
-        while WHITESPACE === (c = @input.next_char)
-          @input.consume_char
-        end
-        nil
-      end
-
-      def consume_all(matcher)
-        s = ''
-        while matcher === (c = @input.next_char)
-          s << c
-          @input.consume_char
-        end
-        s
-      end
-    end
-
-    class FinalState < LexerState
-      def final?
-        true
       end
     end
   end
