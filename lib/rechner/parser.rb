@@ -12,7 +12,7 @@ module Rechner
     end
 
     def expression
-      @tree ||= begin
+      @expression ||= begin
         expr = parse_expression
         unless @token_stream.eof?
           raise ParseError, 'Trailing tokens after expression'
@@ -29,10 +29,10 @@ module Rechner
       case token
       when Lexer::PlusToken
         @token_stream.consume_token
-        AdditionNode.new(term, parse_expression)
+        AdditionExpression.new(term, parse_expression)
       when Lexer::MinusToken
         @token_stream.consume_token
-        SubtractionNode.new(term, parse_expression)
+        SubtractionExpression.new(term, parse_expression)
       else
         term
       end
@@ -44,10 +44,10 @@ module Rechner
       case token
       when Lexer::MultiplicationToken
         @token_stream.consume_token
-        MultiplicationNode.new(factor, parse_term)
+        MultiplicationExpression.new(factor, parse_term)
       when Lexer::DivisionToken
         @token_stream.consume_token
-        DivisionNode.new(factor, parse_term)
+        DivisionExpression.new(factor, parse_term)
       else
         factor
       end
@@ -58,9 +58,9 @@ module Rechner
       @token_stream.consume_token
       case token
       when Lexer::NumberToken
-        ConstantNode.new(token.value)
+        ConstantExpression.new(token.value)
       when Lexer::IdentifierToken
-        ReferenceNode.new(token.value)
+        ReferenceExpression.new(token.value)
       when Lexer::OpenParenthesisToken
         parse_group
       end
@@ -78,7 +78,7 @@ module Rechner
 
     public
 
-    class AstNode
+    class Expression
       def calculate(bindings=nil)
         nil
       end
@@ -88,7 +88,7 @@ module Rechner
       end
     end
 
-    class ConstantNode < AstNode
+    class ConstantExpression < Expression
       attr_reader :value
 
       def initialize(value)
@@ -113,7 +113,7 @@ module Rechner
       end
     end
 
-    class ReferenceNode < AstNode
+    class ReferenceExpression < Expression
       attr_reader :name
 
       def initialize(name)
@@ -146,7 +146,7 @@ module Rechner
       end
     end
 
-    class OperatorNode < AstNode
+    class OperatorExpression < Expression
       attr_reader :left, :right
 
       def initialize(operator, left, right)
@@ -177,25 +177,25 @@ module Rechner
       end
     end
 
-    class AdditionNode < OperatorNode
+    class AdditionExpression < OperatorExpression
       def initialize(left, right)
         super(:+, left, right)
       end
     end
 
-    class SubtractionNode < OperatorNode
+    class SubtractionExpression < OperatorExpression
       def initialize(left, right)
         super(:-, left, right)
       end
     end
 
-    class MultiplicationNode < OperatorNode
+    class MultiplicationExpression < OperatorExpression
       def initialize(left, right)
         super(:*, left, right)
       end
     end
 
-    class DivisionNode < OperatorNode
+    class DivisionExpression < OperatorExpression
       def initialize(left, right)
         super(:/, left, right)
       end
