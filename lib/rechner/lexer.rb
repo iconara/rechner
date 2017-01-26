@@ -23,17 +23,13 @@ module Rechner
       EndToken === @tokens.first
     end
 
-    def next_token(n=0)
-      while @tokens.size < n + 1 && !@state.final?
+    def next_token
+      while @tokens.empty? && !@state.final?
         next_state = @state.run
-        if @tokens.empty?
-          @tokens = @state.tokens.dup
-        else
-          @tokens.concat(@state.tokens)
-        end
+        @tokens = @state.tokens.dup
         @state = next_state
       end
-      @tokens[n]
+      @tokens.first
     end
 
     def consume_token
