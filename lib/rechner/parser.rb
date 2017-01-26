@@ -1,4 +1,6 @@
 module Rechner
+  ReferenceError = Class.new(RechnerError)
+
   class Parser
     def initialize(token_stream)
       @token_stream = token_stream
@@ -66,6 +68,9 @@ module Rechner
     public
 
     class AstNode
+      def calculate(bindings=nil)
+        nil
+      end
     end
 
     class ConstantNode < AstNode
@@ -73,6 +78,10 @@ module Rechner
 
       def initialize(value)
         @value = value
+      end
+
+      def calculate(bindings=nil)
+        @value
       end
 
       def eql?(other)
@@ -93,7 +102,15 @@ module Rechner
       attr_reader :name
 
       def initialize(name)
-        @name = name
+        @name = name.to_sym
+      end
+
+      def calculate(bindings=nil)
+        if bindings && (value = bindings[@name])
+          value
+        else
+          raise ReferenceError, "No binding for \"#{@name}\""
+        end
       end
 
       def eql?(other)
@@ -106,7 +123,7 @@ module Rechner
       end
 
       def to_s
-        @name
+        @name.to_s
       end
     end
 
@@ -117,6 +134,10 @@ module Rechner
         @operator = operator
         @left = left
         @right = right
+      end
+
+      def calculate(bindings=nil)
+        @left.calculate(bindings).send(@operator, @right.calculate(bindings))
       end
 
       def eql?(other)

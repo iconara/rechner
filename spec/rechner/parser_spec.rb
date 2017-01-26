@@ -100,9 +100,27 @@ module Rechner
       )
     end
 
-    it 'returns a tree that can describe itself' do
-      expect(parser.parse('1 + (2 * (a - b) - c * 5)').to_s).to eq('(1 + ((2 * (a - b)) - (c * 5)))')
-      expect(parser.parse(parser.parse('1 + (2 * (a - b) - c * 5)').to_s).to_s).to eq('(1 + ((2 * (a - b)) - (c * 5)))')
+    context 'returns a tree that' do
+      it 'can describe itself' do
+        expect(parser.parse('1 + (2 * (a - b) - c * 5)').to_s).to eq('(1 + ((2 * (a - b)) - (c * 5)))')
+        expect(parser.parse(parser.parse('1 + (2 * (a - b) - c * 5)').to_s).to_s).to eq('(1 + ((2 * (a - b)) - (c * 5)))')
+      end
+
+      it 'can calculate its own value' do
+        expect(parser.parse('1 + 2 + 3 + 4').calculate).to eq(1 + 2 + 3 + 4)
+      end
+
+      context 'when containing references and is given bindings' do
+        it 'can calculate its own value' do
+          expect(parser.parse('a + b + 3 + 4').calculate(a: 1, b: 2)).to eq(1 + 2 + 3 + 4)
+        end
+
+        context 'but not all references are present in the bindings' do
+          it 'raises an error' do
+            expect { parser.parse('a + b').calculate(a: 1) }.to raise_error(ReferenceError, 'No binding for "b"')
+          end
+        end
+      end
     end
   end
 end
