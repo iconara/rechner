@@ -159,6 +159,15 @@ module Rechner
     end
 
     class BaseState < LexerState
+      NUMBER = /\d/
+      LETTER = /\w/
+      PLUS = '+'.freeze
+      MINUS = '-'.freeze
+      MULTIPLICATION = '*'.freeze
+      DIVISION = '/'.freeze
+      OPEN_PARENTHESIS = '('.freeze
+      CLOSE_PARENTHESIS = ')'.freeze
+
       def run
         if @input.eof?
           produce(EndToken.new)
@@ -167,31 +176,31 @@ module Rechner
           @input.consume_whitespace
           c = @input.next_char
           case c
-          when /\d/
+          when NUMBER
             NumberState.new(@input)
-          when /\w/
+          when LETTER
             IdentifierState.new(@input)
-          when '+'
+          when PLUS
             @input.consume_char
             produce(PlusToken.new)
             self.class.new(@input)
-          when '-'
+          when MINUS
             @input.consume_char
             produce(MinusToken.new)
             self.class.new(@input)
-          when '*'
+          when MULTIPLICATION
             @input.consume_char
             produce(MultiplicationToken.new)
             self.class.new(@input)
-          when '/'
+          when DIVISION
             @input.consume_char
             produce(DivisionToken.new)
             self.class.new(@input)
-          when '('
+          when OPEN_PARENTHESIS
             @input.consume_char
             produce(OpenParenthesisToken.new)
             self.class.new(@input)
-          when ')'
+          when CLOSE_PARENTHESIS
             @input.consume_char
             produce(CloseParenthesisToken.new)
             self.class.new(@input)
