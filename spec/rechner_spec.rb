@@ -152,6 +152,10 @@ module Rechner
       expect { lexer.lex('1 # 1') }.to raise_error(LexerError, 'Unexpected input "#" at position 3')
     end
 
+    it 'raises an error when a string that starts with a number continues with letters', pending: 'numbers will have to be validated properly' do
+      expect { lexer.lex('1a') }.to raise_error(LexerError, 'Unexpected input "a" at position 2')
+    end
+
     it 'lexes ungrammatical strings' do
       expect(lexer.lex('1 1 +')).to eq([
         NumberToken.new(1),
