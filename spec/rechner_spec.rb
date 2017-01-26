@@ -14,4 +14,10 @@ describe Rechner do
       end
     end
   end
+
+  describe '#compile' do
+    it 'returns a compiled expression' do
+      expect(calculator.compile('1 + 2 * 3').calculate).to eq(1 + 2 * 3)
+    end
+  end
 end

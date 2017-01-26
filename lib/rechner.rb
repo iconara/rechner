@@ -1,8 +1,12 @@
 module Rechner
   RechnerError = Class.new(StandardError)
 
+  def self.compile(expression)
+    Parser.parse(expression)
+  end
+
   def self.calculate(expression, bindings=nil)
-    Parser.parse(expression).calculate(bindings)
+    compile(expression).calculate(bindings)
   end
 end
 
