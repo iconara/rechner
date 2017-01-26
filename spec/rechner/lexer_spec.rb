@@ -139,11 +139,11 @@ module Rechner
         described_class::PlusToken.new,
         described_class::NumberToken.new(3),
         described_class::MultiplicationToken.new,
-        described_class::OpenParenthesesToken.new,
+        described_class::OpenParenthesisToken.new,
         described_class::IdentifierToken.new('c'),
         described_class::MinusToken.new,
         described_class::IdentifierToken.new('d'),
-        described_class::CloseParenthesesToken.new,
+        described_class::CloseParenthesisToken.new,
         described_class::EndToken.new,
       ])
     end

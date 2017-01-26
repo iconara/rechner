@@ -61,14 +61,14 @@ module Rechner
         ConstantNode.new(token.value)
       when Lexer::IdentifierToken
         ReferenceNode.new(token.value)
-      when Lexer::OpenParenthesesToken
-        parse_parentheses
+      when Lexer::OpenParenthesisToken
+        parse_group
       end
     end
 
-    def parse_parentheses
+    def parse_group
       expr = parse_expression
-      if Lexer::CloseParenthesesToken === @token_stream.next_token
+      if Lexer::CloseParenthesisToken === @token_stream.next_token
         @token_stream.consume_token
       else
         raise ParseError, 'Missing closing parenthesis'

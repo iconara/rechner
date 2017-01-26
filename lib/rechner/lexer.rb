@@ -125,13 +125,13 @@ module Rechner
       end
     end
 
-    class OpenParenthesesToken < Token
+    class OpenParenthesisToken < Token
       def initialize
         super('(')
       end
     end
 
-    class CloseParenthesesToken < Token
+    class CloseParenthesisToken < Token
       def initialize
         super(')')
       end
@@ -189,11 +189,11 @@ module Rechner
             self.class.new(@input)
           when '('
             @input.consume_char
-            produce(OpenParenthesesToken.new)
+            produce(OpenParenthesisToken.new)
             self.class.new(@input)
           when ')'
             @input.consume_char
-            produce(CloseParenthesesToken.new)
+            produce(CloseParenthesisToken.new)
             self.class.new(@input)
           else
             raise LexerError, "Unexpected input \"#{c}\" at position #{@input.position}"
