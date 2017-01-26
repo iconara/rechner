@@ -166,5 +166,89 @@ module Rechner
         ])
       end
     end
+
+    describe '#next_token' do
+      subject :lexer do
+        described_class.new('1 + 2 * b')
+      end
+
+      it 'returns the next token of the character stream' do
+        expect(lexer.next_token).to eq(described_class::NumberToken.new(1))
+      end
+
+      it 'does not consume the token' do
+        expect(lexer.next_token).to eq(described_class::NumberToken.new(1))
+        expect(lexer.next_token).to eq(described_class::NumberToken.new(1))
+        expect(lexer.next_token).to eq(described_class::NumberToken.new(1))
+      end
+
+      context 'when at the end' do
+        it 'returns an end token' do
+          5.times do
+            lexer.next_token
+            lexer.consume_token
+          end
+          expect(lexer.next_token).to eq(described_class::EndToken.new)
+        end
+      end
+    end
+
+    describe '#consume_token' do
+      subject :lexer do
+        described_class.new('1 + 2 * b')
+      end
+
+      it 'returns the previous token' do
+        expect(lexer.consume_token).to be_nil
+        lexer.next_token
+        expect(lexer.consume_token).to eq(described_class::NumberToken.new(1))
+      end
+
+      it 'makes #next_token return a new token' do
+        lexer.next_token
+        expect(lexer.consume_token).to eq(described_class::NumberToken.new(1))
+        expect(lexer.next_token).to eq(described_class::PlusToken.new)
+      end
+
+      it 'does nothing until #next_token is called' do
+        10.times { lexer.consume_token }
+        expect(lexer.next_token).to eq(described_class::NumberToken.new(1))
+        10.times { lexer.consume_token }
+        expect(lexer.next_token).to eq(described_class::PlusToken.new)
+      end
+
+      context 'when at the end' do
+        it 'continues to return end tokens' do
+          5.times do
+            lexer.next_token
+            lexer.consume_token
+          end
+          lexer.next_token
+          expect(lexer.consume_token).to eq(described_class::EndToken.new)
+          lexer.next_token
+          expect(lexer.consume_token).to eq(described_class::EndToken.new)
+          lexer.next_token
+          expect(lexer.consume_token).to eq(described_class::EndToken.new)
+        end
+      end
+    end
+
+    describe '#eof?' do
+      subject :lexer do
+        described_class.new('1 + 2 * b')
+      end
+
+      it 'returns false when there are more tokens' do
+        expect(lexer.eof?).to be_falsy
+      end
+
+      it 'returns true when there are no more tokens' do
+        5.times do
+          lexer.next_token
+          lexer.consume_token
+        end
+        expect(lexer.eof?).to be_truthy
+      end
+    end
   end
 end
