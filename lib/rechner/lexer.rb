@@ -63,13 +63,6 @@ module Rechner
         @char = nil
         char
       end
-
-      def consume_whitespace
-        while (c = next_char) && c =~ /\s/
-          consume_char
-        end
-        nil
-      end
     end
 
     class Token
@@ -159,6 +152,7 @@ module Rechner
     end
 
     class BaseState < LexerState
+      WHITESPACE = /\s/
       NUMBER = /\d/
       LETTER = /\w/
       PLUS = '+'.freeze
@@ -173,13 +167,15 @@ module Rechner
           produce(EndToken.new)
           FinalState.new(@input)
         else
-          @input.consume_whitespace
+          consume_whitespace
           c = @input.next_char
           case c
           when NUMBER
-            NumberState.new(@input)
+            produce(NumberToken.new(consume_all(NUMBER).to_i))
+            self.class.new(@input)
           when LETTER
-            IdentifierState.new(@input)
+            produce(IdentifierToken.new(consume_all(LETTER)))
+            self.class.new(@input)
           when PLUS
             @input.consume_char
             produce(PlusToken.new)
@@ -209,35 +205,27 @@ module Rechner
           end
         end
       end
+
+      def consume_whitespace
+        while WHITESPACE === (c = @input.next_char)
+          @input.consume_char
+        end
+        nil
+      end
+
+      def consume_all(matcher)
+        s = ''
+        while matcher === (c = @input.next_char)
+          s << c
+          @input.consume_char
+        end
+        s
+      end
     end
 
     class FinalState < LexerState
       def final?
         true
-      end
-    end
-
-    class NumberState < LexerState
-      def run
-        n = ''
-        while (c = @input.next_char) =~ /\d/
-          n << c
-          @input.consume_char
-        end
-        produce(NumberToken.new(n.to_i))
-        BaseState.new(@input)
-      end
-    end
-
-    class IdentifierState < LexerState
-      def run
-        s = ''
-        while (c = @input.next_char) =~ /\w|\d/
-          s << c
-          @input.consume_char
-        end
-        produce(IdentifierToken.new(s))
-        BaseState.new(@input)
       end
     end
   end
