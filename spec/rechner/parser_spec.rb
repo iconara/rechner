@@ -122,5 +122,17 @@ module Rechner
         end
       end
     end
+
+    context 'when there are trailing tokens' do
+      it 'raises an error' do
+        expect { parser.parse('a + b a') }.to raise_error(ParseError, 'Trailing tokens after expression')
+      end
+    end
+
+    context 'when a closing parenthesis is missing' do
+      it 'raises an error' do
+        expect { parser.parse('(a + (b * c)') }.to raise_error(ParseError, 'Missing closing parenthesis')
+      end
+    end
   end
 end

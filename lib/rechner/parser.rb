@@ -1,4 +1,5 @@
 module Rechner
+  ParseError = Class.new(RechnerError)
   ReferenceError = Class.new(RechnerError)
 
   class Parser
@@ -7,11 +8,17 @@ module Rechner
     end
 
     def self.parse(str)
-      new(Lexer.new(str)).tree
+      new(Lexer.new(str)).expression
     end
 
-    def tree
-      @tree ||= parse_expression
+    def expression
+      @tree ||= begin
+        expr = parse_expression
+        unless @token_stream.eof?
+          raise ParseError, 'Trailing tokens after expression'
+        end
+        expr
+      end
     end
 
     private
@@ -60,9 +67,13 @@ module Rechner
     end
 
     def parse_parentheses
-      expression = parse_expression
-      @token_stream.consume_token
-      expression
+      expr = parse_expression
+      if Lexer::CloseParenthesesToken === @token_stream.next_token
+        @token_stream.consume_token
+      else
+        raise ParseError, 'Missing closing parenthesis'
+      end
+      expr
     end
 
     public

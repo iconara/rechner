@@ -19,6 +19,10 @@ module Rechner
       tokens
     end
 
+    def eof?
+      EndToken === @tokens.first
+    end
+
     def next_token(n=0)
       while @tokens.size < n + 1 && !@state.final?
         next_state = @state.run
