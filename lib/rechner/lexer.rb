@@ -14,16 +14,25 @@ module Rechner
       tokens = []
       while (token = lexer.next_token)
         tokens << token
+        lexer.consume_token
       end
       tokens
     end
 
-    def next_token
-      while @tokens.empty? && !@state.final?
+    def next_token(n=0)
+      while @tokens.size < n + 1 && !@state.final?
         next_state = @state.run
-        @tokens = @state.tokens.dup
+        if @tokens.empty?
+          @tokens = @state.tokens.dup
+        else
+          @tokens.concat(@state.tokens)
+        end
         @state = next_state
       end
+      @tokens[n]
+    end
+
+    def consume_token
       @tokens.shift
     end
 
@@ -50,7 +59,9 @@ module Rechner
       end
 
       def consume_char
+        char = @char
         @char = nil
+        char
       end
 
       def consume_whitespace
