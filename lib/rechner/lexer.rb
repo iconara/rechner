@@ -80,7 +80,7 @@ module Rechner
       end
 
       def eql?(other)
-        @value.eql?(other.value)
+        other.is_a?(self.class) && @value.eql?(other.value)
       end
       alias_method :==, :eql?
 
