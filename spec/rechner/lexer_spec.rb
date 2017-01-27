@@ -19,6 +19,13 @@ module Rechner
         ])
       end
 
+      it 'lexes a decimal number' do
+        expect(lexer.lex('12.3')).to eq([
+          described_class::NumberToken.new(12.3),
+          described_class::EndToken.new,
+        ])
+      end
+
       it 'lexes an addition' do
         expect(lexer.lex('12+34')).to eq([
           described_class::NumberToken.new(12),

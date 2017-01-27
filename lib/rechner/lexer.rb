@@ -37,7 +37,9 @@ module Rechner
     private
 
     WHITESPACE = /\s/
-    NUMBER = /\d/
+    NUMBER_START = /\d/
+    NUMBER_CONT = /[\d.]/
+    DECIMAL_POINT = '.'.freeze
     LETTER = /\w/
     PLUS = '+'.freeze
     MINUS = '-'.freeze
@@ -53,8 +55,10 @@ module Rechner
         consume_whitespace
         c = @character_stream.next_char
         case c
-        when NUMBER
-          NumberToken.new(consume_all(NUMBER).to_i)
+        when NUMBER_START
+          n = consume_all(NUMBER_CONT).to_f
+          n = n == n.truncate ? n.truncate : n
+          NumberToken.new(n)
         when LETTER
           IdentifierToken.new(consume_all(LETTER))
         when PLUS

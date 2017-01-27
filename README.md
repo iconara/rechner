@@ -68,7 +68,7 @@ expression.accept(Lispify.new) # => "(+ a (b + 3))"
 
 ## Known issues & limitations
 
-This is a toy calculator. It only supports integers, it doesn't have proper error handling. Don't use it.
+This is a toy calculator. It doesn't have proper error handling. Don't use it.
 
 ## License & Copyright
 
