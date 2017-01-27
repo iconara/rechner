@@ -74,6 +74,8 @@ module Rechner
         ReferenceExpression.new(token.value)
       when Lexer::OpenParenthesisToken
         parse_group
+      else
+        raise ParseError, format('Illegal token in factor: %p', token.value)
       end
     end
 
