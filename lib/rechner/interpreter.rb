@@ -16,20 +16,8 @@ module Rechner
       end
     end
 
-    def visit_addition(left_expression, right_expression)
-      left_expression.accept(self) + right_expression.accept(self)
-    end
-
-    def visit_subtraction(left_expression, right_expression)
-      left_expression.accept(self) - right_expression.accept(self)
-    end
-
-    def visit_multiplication(left_expression, right_expression)
-      left_expression.accept(self) * right_expression.accept(self)
-    end
-
-    def visit_division(left_expression, right_expression)
-      left_expression.accept(self) / right_expression.accept(self)
+    def visit_operator(operator_expression)
+      operator_expression.left.accept(self).send(operator_expression.operator, operator_expression.right.accept(self))
     end
   end
 
@@ -42,20 +30,8 @@ module Rechner
       [reference_expression.name]
     end
 
-    def visit_addition(left_expression, right_expression)
-      left_expression.accept(self) | right_expression.accept(self)
-    end
-
-    def visit_subtraction(left_expression, right_expression)
-      left_expression.accept(self) | right_expression.accept(self)
-    end
-
-    def visit_multiplication(left_expression, right_expression)
-      left_expression.accept(self) | right_expression.accept(self)
-    end
-
-    def visit_division(left_expression, right_expression)
-      left_expression.accept(self) | right_expression.accept(self)
+    def visit_operator(operator_expression)
+      operator_expression.left.accept(self) | operator_expression.right.accept(self)
     end
   end
 

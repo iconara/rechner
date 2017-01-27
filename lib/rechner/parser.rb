@@ -134,12 +134,16 @@ module Rechner
     end
 
     class OperatorExpression < Expression
-      attr_reader :left, :right
+      attr_reader :operator, :left, :right
 
       def initialize(operator, left, right)
         @operator = operator
         @left = left
         @right = right
+      end
+
+      def accept(visitor)
+        visitor.visit_operator(self)
       end
 
       def eql?(other)
@@ -160,19 +164,11 @@ module Rechner
       def initialize(left, right)
         super(:+, left, right)
       end
-
-      def accept(visitor)
-        visitor.visit_addition(@left, @right)
-      end
     end
 
     class SubtractionExpression < OperatorExpression
       def initialize(left, right)
         super(:-, left, right)
-      end
-
-      def accept(visitor)
-        visitor.visit_subtraction(@left, @right)
       end
     end
 
@@ -180,19 +176,11 @@ module Rechner
       def initialize(left, right)
         super(:*, left, right)
       end
-
-      def accept(visitor)
-        visitor.visit_multiplication(@left, @right)
-      end
     end
 
     class DivisionExpression < OperatorExpression
       def initialize(left, right)
         super(:/, left, right)
-      end
-
-      def accept(visitor)
-        visitor.visit_division(self, self, @left, @right)
       end
     end
   end

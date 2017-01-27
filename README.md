@@ -48,12 +48,22 @@ You can even write your own interpreter for the expressions:
 ```ruby
 require 'rechner'
 
-class MyInterpreter
-  # see the parser tests for details
+class Lispify
+  def visit_constant(constant_expression)
+    constant_expression.value
+  end
+
+  def visit_reference(reference_expression)
+    reference_expression.name
+  end
+
+  def visit_operator(operator_expression)
+    format('(%s %s %s)', operator_expression.operator, operator_expression.left, operator_expression.right)
+  end
 end
 
 expression = Rechner.compile('a + b + 3')
-expression.accept(MyInterpreter.new) # => (some structure built by the custom interpreter)
+expression.accept(Lispify.new) # => "(+ a (b + 3))"
 ```
 
 ## Known issues & limitations

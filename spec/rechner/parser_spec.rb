@@ -190,29 +190,13 @@ module Rechner
       }
     end
 
-    def operation(operator, left_expression, right_expression)
+    def visit_operator(operator_expression)
       {
         :type => :operation,
-        :operator => operator,
-        :left => left_expression.accept(self),
-        :right => right_expression.accept(self),
+        :operator => operator_expression.operator,
+        :left => operator_expression.left.accept(self),
+        :right => operator_expression.right.accept(self),
       }
-    end
-
-    def visit_addition(left_expression, right_expression)
-      operation(:+, left_expression, right_expression)
-    end
-
-    def visit_subtraction(left_expression, right_expression)
-      operation(:-, left_expression, right_expression)
-    end
-
-    def visit_multiplication(left_expression, right_expression)
-      operation(:*, left_expression, right_expression)
-    end
-
-    def visit_division(left_expression, right_expression)
-      operation(:/, left_expression, right_expression)
     end
   end
 end
