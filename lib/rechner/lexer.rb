@@ -57,7 +57,7 @@ module Rechner
 
     def produce_next_token
       if @character_stream.eof?
-        EndToken.new
+        EndToken::INSTANCE
       else
         consume_whitespace
         c = @character_stream.next_char
@@ -75,22 +75,22 @@ module Rechner
           IdentifierToken.new(consume_all(LETTER))
         when PLUS
           @character_stream.consume_char
-          PlusToken.new
+          PlusToken::INSTANCE
         when MINUS
           @character_stream.consume_char
-          MinusToken.new
+          MinusToken::INSTANCE
         when MULTIPLICATION
           @character_stream.consume_char
-          MultiplicationToken.new
+          MultiplicationToken::INSTANCE
         when DIVISION
           @character_stream.consume_char
-          DivisionToken.new
+          DivisionToken::INSTANCE
         when OPEN_PARENTHESIS
           @character_stream.consume_char
-          OpenParenthesisToken.new
+          OpenParenthesisToken::INSTANCE
         when CLOSE_PARENTHESIS
           @character_stream.consume_char
-          CloseParenthesisToken.new
+          CloseParenthesisToken::INSTANCE
         else
           raise LexerError.new(format('Unexpected input %p', c), @character_stream.position - 1)
         end
@@ -165,6 +165,8 @@ module Rechner
       def initialize
         super(nil)
       end
+
+      INSTANCE = new
     end
 
     class NumberToken < Token
@@ -177,36 +179,48 @@ module Rechner
       def initialize
         super('+')
       end
+
+      INSTANCE = new
     end
 
     class MinusToken < Token
       def initialize
         super('-')
       end
+
+      INSTANCE = new
     end
 
     class MultiplicationToken < Token
       def initialize
         super('*')
       end
+
+      INSTANCE = new
     end
 
     class DivisionToken < Token
       def initialize
         super('/')
       end
+
+      INSTANCE = new
     end
 
     class OpenParenthesisToken < Token
       def initialize
         super('(')
       end
+
+      INSTANCE = new
     end
 
     class CloseParenthesisToken < Token
       def initialize
         super(')')
       end
+
+      INSTANCE = new
     end
   end
 end
