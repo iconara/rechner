@@ -1,7 +1,14 @@
 require 'stringio'
 
 module Rechner
-  LexerError = Class.new(RechnerError)
+  class LexerError < RechnerError
+    attr_reader :position
+
+    def initialize(message, position)
+      super(message + " at position #{position}")
+      @position = position
+    end
+  end
 
   class Lexer
     def initialize(str)
@@ -38,7 +45,7 @@ module Rechner
 
     WHITESPACE = /\s/
     NUMBER_START = /\d/
-    NUMBER_CONT = /[\d.]/
+    NUMBER_CONT = /[\w.]/
     DECIMAL_POINT = '.'.freeze
     LETTER = /\w/
     PLUS = '+'.freeze
@@ -56,9 +63,14 @@ module Rechner
         c = @character_stream.next_char
         case c
         when NUMBER_START
-          n = consume_all(NUMBER_CONT).to_f
-          n = n == n.truncate ? n.truncate : n
-          NumberToken.new(n)
+          s = consume_all(NUMBER_CONT)
+          begin
+            n = Float(s)
+            n = n == n.truncate ? n.truncate : n
+            NumberToken.new(n)
+          rescue ArgumentError
+            raise LexerError.new(format('Malformed number %p', s), @character_stream.position - s.bytesize)
+          end
         when LETTER
           IdentifierToken.new(consume_all(LETTER))
         when PLUS
@@ -80,7 +92,7 @@ module Rechner
           @character_stream.consume_char
           CloseParenthesisToken.new
         else
-          raise LexerError, "Unexpected input \"#{c}\" at position #{@character_stream.position}"
+          raise LexerError.new(format('Unexpected input %p', c), @character_stream.position - 1)
         end
       end
     end

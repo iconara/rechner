@@ -157,11 +157,12 @@ module Rechner
       end
 
       it 'raises an error when the input contains unexpected characters' do
-        expect { lexer.lex('1 # 1') }.to raise_error(LexerError, 'Unexpected input "#" at position 3')
+        expect { lexer.lex('1 # 1') }.to raise_error(LexerError, 'Unexpected input "#" at position 2')
       end
 
-      it 'raises an error when a string that starts with a number continues with letters', pending: 'numbers will have to be validated properly' do
-        expect { lexer.lex('1a') }.to raise_error(LexerError, 'Unexpected input "a" at position 2')
+      it 'raises an error when a string that starts with a number continues with letters', aggregate_failures: true do
+        expect { lexer.lex('1a') }.to raise_error(LexerError, 'Malformed number "1a" at position 0')
+        expect { lexer.lex('1..0') }.to raise_error(LexerError, 'Malformed number "1..0" at position 0')
       end
 
       it 'lexes ungrammatical strings' do
