@@ -34,6 +34,28 @@ expression.calculate(a: 1, b: 2) # => 6
 expression.calculate(a: 2, b: 3) # => 8
 ```
 
+It can tell you what references an expression contains:
+
+```ruby
+require 'rechner'
+
+expression = Rechner.compile('a + b + 3')
+expression.references # => [:a, :b]
+```
+
+You can even write your own interpreter for the expressions:
+
+```ruby
+require 'rechner'
+
+class MyInterpreter
+  # see the parser tests for details
+end
+
+expression = Rechner.compile('a + b + 3')
+expression.accept(MyInterpreter.new) # => (some structure built by the custom interpreter)
+```
+
 ## License & Copyright
 
 © 2017 Theo Hultberg, see LICENSE.txt (BSD 3-Clause).

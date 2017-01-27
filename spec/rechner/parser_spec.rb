@@ -134,6 +134,31 @@ module Rechner
             end
           end
         end
+
+        it 'can be interpreted with a custom interpreter' do
+          expect(parser.parse('a + b + 3').accept(TreeBuilder.new)).to eq(
+            {
+              :type => :operation,
+              :operator => :+,
+              :left => {
+                :type => :reference,
+                :name => :a
+              },
+              :right => {
+                :type => :operation,
+                :operator => :+,
+                :left => {
+                  :type => :reference,
+                  :name => :b
+                },
+                :right => {
+                  :type => :constant,
+                  :value => 3
+                }
+              }
+            }
+          )
+        end
       end
 
       context 'when there are trailing tokens' do
@@ -147,6 +172,47 @@ module Rechner
           expect { parser.parse('(a + (b * c)') }.to raise_error(ParseError, 'Missing closing parenthesis')
         end
       end
+    end
+  end
+
+  class TreeBuilder
+    def visit_constant(constant_expression)
+      {
+        :type => :constant,
+        :value => constant_expression.value
+      }
+    end
+
+    def visit_reference(reference_expression)
+      {
+        :type => :reference,
+        :name => reference_expression.name
+      }
+    end
+
+    def operation(operator, left_expression, right_expression)
+      {
+        :type => :operation,
+        :operator => operator,
+        :left => left_expression.accept(self),
+        :right => right_expression.accept(self),
+      }
+    end
+
+    def visit_addition(left_expression, right_expression)
+      operation(:+, left_expression, right_expression)
+    end
+
+    def visit_subtraction(left_expression, right_expression)
+      operation(:-, left_expression, right_expression)
+    end
+
+    def visit_multiplication(left_expression, right_expression)
+      operation(:*, left_expression, right_expression)
+    end
+
+    def visit_division(left_expression, right_expression)
+      operation(:/, left_expression, right_expression)
     end
   end
 end

@@ -78,13 +78,80 @@ module Rechner
 
     public
 
+    class Calculator
+      def initialize(bindings=nil)
+        @bindings = bindings || {}
+      end
+
+      def visit_constant(constant_expression)
+        constant_expression.value
+      end
+
+      def visit_reference(reference_expression)
+        if (value = @bindings[reference_expression.name])
+          value
+        else
+          raise ReferenceError, "No binding for \"#{reference_expression.name}\""
+        end
+      end
+
+      def visit_addition(left_expression, right_expression)
+        left_expression.accept(self) + right_expression.accept(self)
+      end
+
+      def visit_subtraction(left_expression, right_expression)
+        left_expression.accept(self) - right_expression.accept(self)
+      end
+
+      def visit_multiplication(left_expression, right_expression)
+        left_expression.accept(self) * right_expression.accept(self)
+      end
+
+      def visit_division(left_expression, right_expression)
+        left_expression.accept(self) / right_expression.accept(self)
+      end
+    end
+
+    class ReferenceFinder
+      def visit_constant(constant_expression)
+        []
+      end
+
+      def visit_reference(reference_expression)
+        [reference_expression.name]
+      end
+
+      def visit_addition(left_expression, right_expression)
+        left_expression.accept(self) | right_expression.accept(self)
+      end
+
+      def visit_subtraction(left_expression, right_expression)
+        left_expression.accept(self) | right_expression.accept(self)
+      end
+
+      def visit_multiplication(left_expression, right_expression)
+        left_expression.accept(self) | right_expression.accept(self)
+      end
+
+      def visit_division(left_expression, right_expression)
+        left_expression.accept(self) | right_expression.accept(self)
+      end
+    end
+
     class Expression
       def calculate(bindings=nil)
         nil
       end
 
       def references
-        []
+        accept(ReferenceFinder.new)
+      end
+
+      def calculate(bindings=nil)
+        accept(Calculator.new(bindings))
+      end
+
+      def accept(visitor)
       end
     end
 
@@ -95,8 +162,8 @@ module Rechner
         @value = value
       end
 
-      def calculate(bindings=nil)
-        @value
+      def accept(visitor)
+        visitor.visit_constant(self)
       end
 
       def eql?(other)
@@ -120,16 +187,8 @@ module Rechner
         @name = name.to_sym
       end
 
-      def calculate(bindings=nil)
-        if bindings && (value = bindings[@name])
-          value
-        else
-          raise ReferenceError, "No binding for \"#{@name}\""
-        end
-      end
-
-      def references
-        [@name]
+      def accept(visitor)
+        visitor.visit_reference(self)
       end
 
       def eql?(other)
@@ -155,14 +214,6 @@ module Rechner
         @right = right
       end
 
-      def calculate(bindings=nil)
-        @left.calculate(bindings).send(@operator, @right.calculate(bindings))
-      end
-
-      def references
-        @left.references | @right.references
-      end
-
       def eql?(other)
         other.is_a?(self.class) && @left.eql?(other.left) && @right.eql?(other.right)
       end
@@ -181,11 +232,19 @@ module Rechner
       def initialize(left, right)
         super(:+, left, right)
       end
+
+      def accept(visitor)
+        visitor.visit_addition(@left, @right)
+      end
     end
 
     class SubtractionExpression < OperatorExpression
       def initialize(left, right)
         super(:-, left, right)
+      end
+
+      def accept(visitor)
+        visitor.visit_subtraction(@left, @right)
       end
     end
 
@@ -193,11 +252,19 @@ module Rechner
       def initialize(left, right)
         super(:*, left, right)
       end
+
+      def accept(visitor)
+        visitor.visit_multiplication(@left, @right)
+      end
     end
 
     class DivisionExpression < OperatorExpression
       def initialize(left, right)
         super(:/, left, right)
+      end
+
+      def accept(visitor)
+        visitor.visit_division(self, self, @left, @right)
       end
     end
   end
