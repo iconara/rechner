@@ -57,6 +57,17 @@ module Rechner
       token = @token_stream.next_token
       @token_stream.consume_token
       case token
+      when Lexer::MinusToken
+        factor = parse_factor
+        case factor
+        when ConstantExpression
+          ConstantExpression.new(-factor.value)
+        when ReferenceExpression
+          MultiplicationExpression.new(
+            ConstantExpression.new(-1),
+            factor
+          )
+        end
       when Lexer::NumberToken
         ConstantExpression.new(token.value)
       when Lexer::IdentifierToken

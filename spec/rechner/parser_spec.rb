@@ -101,10 +101,34 @@ module Rechner
         )
       end
 
+      it 'parses unary minus' do
+        expect(parser.parse('-1')).to eq(
+          described_class::ConstantExpression.new(-1)
+        )
+      end
+
+      it 'parses unary minus in an expression' do
+        expect(parser.parse('2 * -1')).to eq(
+          described_class::MultiplicationExpression.new(
+            described_class::ConstantExpression.new(2),
+            described_class::ConstantExpression.new(-1)
+          )
+        )
+      end
+
+      it 'rewrites unary minus of a reference to a multiplication with -1' do
+        expect(parser.parse('-a')).to eq(
+          described_class::MultiplicationExpression.new(
+            described_class::ConstantExpression.new(-1),
+            described_class::ReferenceExpression.new('a')
+          )
+        )
+      end
+
       context 'returns a compiled expression that' do
         it 'can describe itself' do
-          expect(parser.parse('1 + (2 * (a - b) - c * 5)').to_s).to eq('(1 + ((2 * (a - b)) - (c * 5)))')
-          expect(parser.parse(parser.parse('1 + (2 * (a - b) - c * 5)').to_s).to_s).to eq('(1 + ((2 * (a - b)) - (c * 5)))')
+          expect(parser.parse('1 + (2 * (a - b) - c * -5)').to_s).to eq('(1 + ((2 * (a - b)) - (c * -5)))')
+          expect(parser.parse(parser.parse('1 + (2 * (a - b) - c * -5)').to_s).to_s).to eq('(1 + ((2 * (a - b)) - (c * -5)))')
         end
 
         it 'can calculate its own value' do
