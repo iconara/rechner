@@ -56,6 +56,10 @@ expression = Rechner.compile('a + b + 3')
 expression.accept(MyInterpreter.new) # => (some structure built by the custom interpreter)
 ```
 
+## Known issues & limitations
+
+This is a toy calculator. It only supports integers, it doesn't have proper error handling. Don't use it.
+
 ## License & Copyright
 
 © 2017 Theo Hultberg, see LICENSE.txt (BSD 3-Clause).
