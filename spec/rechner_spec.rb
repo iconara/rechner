@@ -15,9 +15,19 @@ describe Rechner do
     end
   end
 
+  describe '#parse' do
+    it 'returns a reusable expression object' do
+      expression = calculator.parse('1 + 2 * a')
+      expect(expression.calculate(a: 3)).to eq(1 + 2 * 3)
+      expect(expression.calculate(a: 5)).to eq(1 + 2 * 5)
+    end
+  end
+
   describe '#compile' do
-    it 'returns a compiled expression' do
-      expect(calculator.compile('1 + 2 * 3').calculate).to eq(1 + 2 * 3)
+    it 'returns a reusable expression object', aggregate_failures: true do
+      expression = calculator.compile('1 + 2 * a')
+      expect(expression.calculate(a: 3)).to eq(1 + 2 * 3)
+      expect(expression.calculate(a: 5)).to eq(1 + 2 * 5)
     end
   end
 end
