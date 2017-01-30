@@ -13,3 +13,4 @@ end
 require 'rechner/lexer'
 require 'rechner/parser'
 require 'rechner/interpreter'
+require 'rechner/compiler'
