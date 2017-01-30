@@ -98,7 +98,7 @@ module Rechner
     end
 
     def consume_whitespace
-      while WHITESPACE === (c = @character_stream.next_char)
+      while WHITESPACE === @character_stream.next_char
         @character_stream.consume_char
       end
       nil
