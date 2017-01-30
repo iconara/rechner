@@ -24,12 +24,12 @@ Rechner.calculate('a * (b - 3)', a: 2, b: 7) # => 8
 Rechner.calculate('a / b - 4', a: 8, b: 2) # => 0
 ```
 
-It can compile an expression for reuse:
+It can prepare an expression for reuse:
 
 ```ruby
 require 'rechner'
 
-expression = Rechner.compile('a + b + 3')
+expression = Rechner.prepare('a + b + 3')
 expression.calculate(a: 1, b: 2) # => 6
 expression.calculate(a: 2, b: 3) # => 8
 ```
@@ -39,7 +39,7 @@ It can tell you what references an expression contains:
 ```ruby
 require 'rechner'
 
-expression = Rechner.compile('a + b + 3')
+expression = Rechner.prepare('a + b + 3')
 expression.references # => [:a, :b]
 ```
 
@@ -62,9 +62,20 @@ class Lispify
   end
 end
 
-expression = Rechner.compile('a + b + 3')
+expression = Rechner.parse('a + b + 3')
 expression.accept(Lispify.new) # => "(+ a (b + 3))"
 ```
+
+Finally, if your Ruby supports named arguments you can compile the expression to native code:
+
+```ruby
+require 'rechner'
+
+expression = Rechner.compile('a + b + 3')
+expression.calculate(a: 1, b: 2) # => 6
+```
+
+What happens behind the scenes here is that the expression is rendered as a Ruby expression and compiled to a `Proc` using `Kernel.eval`. The `Proc` has named arguments matching the references in the expression, with default value `nil`. If you leave out a binding you will get `TypeError` since the reference will be `nil`, and if you specify an extra binding you will get `ArgumentError` since there is no such named argument.
 
 ## Known issues & limitations
 
